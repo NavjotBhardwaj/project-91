@@ -1,5 +1,7 @@
-import db_setup.db_lib as db
+from top_scorer_db.db_setup import db_lib as db
 import csv
+import logging
+logger = logging.getLogger(__name__)
 
 from os.path import dirname, abspath
 
@@ -26,6 +28,7 @@ def create_tables():
     # Get a database connection
     conn = db.create_connection(database)
 
+    logger.info("Creating the tables if they do not exist.")
     # Create table
     if conn is not None:
         # Create students table
@@ -34,7 +37,7 @@ def create_tables():
         db.execute(conn, sql_create_students_stg_table)
         db.execute(conn, sql_create_students_cln_table)
     else:
-        print("Error! cannot create the database connection.")
+        logger.error("Error! cannot create the database connection.")
 
 def load_to_stg(file_path: str, has_header: bool):
     """
@@ -43,6 +46,7 @@ def load_to_stg(file_path: str, has_header: bool):
     """
     # Get a database connection
     conn = db.create_connection(database)
+    logger.info("Loading to stage table")
     with open('/Users/navjotbhardwaj/Desktop/91/project-91/testdata/test_data.csv','r') as f:
         dr = csv.DictReader(f) # comma is default delimiter
         data = []
@@ -60,6 +64,7 @@ def load_to_stg(file_path: str, has_header: bool):
         conn.execute("DELETE FROM stg_students where 1=1;")
         conn.executemany("INSERT INTO stg_students (f_name, s_name, score) VALUES (?, ?, ?);", to_db)
         conn.commit()
+        logger.info("Stage load is completed")
         
 def load_to_main():
     """
@@ -68,7 +73,8 @@ def load_to_main():
     - Load strategies
     - Transformation
     - This will be embedded in DBT or ADF etc.
-    """              
+    """
+    logger.info("Loading to main table")              
     # Get a database connection
     conn = db.create_connection(database)
     conn.execute("DELETE FROM cln_students where 1=1;")
@@ -78,11 +84,11 @@ def load_to_main():
                         FROM stg_students                
                  ;""")
     conn.commit()
+    logger.info("Loading to main table done.")
     
-def main():
+def project_91_calculation():
     """
-    project_91_calculation
-    Finding the highest score and return back
+    Finding the highest score and printing the results as requested
     """
     # Get a database connection
     conn = db.create_connection(database)
@@ -101,8 +107,3 @@ def main():
     print('\n'.join(' '.join(map(str, row[0:2])) for row in rows) + 
         "\nScore: " + str(rows[1][2]))
     return rows
-
-
-if __name__ == '__main__':
-    main()
-
