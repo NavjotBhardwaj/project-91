@@ -11,6 +11,7 @@ import sys
 import argparse
 import logging
 from top_scorer_py.top_scorer import get_top_scorer
+from top_scorer_db.top_scorer_db import get_top_scorer_db
 logging.basicConfig(level=logging.INFO)
 logger= logging.getLogger(__name__)
 
@@ -42,7 +43,7 @@ def main():
     if mode == 'Python': 
         get_top_scorer(args.file, args.has_header)
     else:
-        print("TBA")
+        get_top_scorer_db(args.file, args.has_header)
 
 
 if __name__ == "__main__":
